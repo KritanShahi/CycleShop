@@ -14,7 +14,7 @@ export default function Navbar() {
           {/* Logo / Brand */}
           <div className="flex-shrink-0">
             <Link href="/" className="text-2xl font-bold text-green-600 dark:text-green-400">
-              Govinda Cycle Shop
+              Kritan Cycle Shop
             </Link>
           </div>
 

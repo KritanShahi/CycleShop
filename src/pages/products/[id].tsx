@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
-import { products } from "../../src/data/products";
-import Navbar from "../../src/components/Navbar";
+import { products } from "../../data/products";
+import Navbar from "../../components/Navbar";
 
 export default function ProductDetail() {
   const router = useRouter();

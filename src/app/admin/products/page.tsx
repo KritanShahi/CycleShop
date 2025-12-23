@@ -23,9 +23,9 @@ export default function ManageProducts() {
 
   // Fetch products from backend
   useEffect(() => {
-    fetch("/api/products")
+    fetch("http://localhost:5000/api/products")
       .then(res => res.json())
-      .then(data => setProducts(data));
+      .then(data =>{  console.log("Fetched products:", data); setProducts(data)});
   }, []);
 
   // Handle form change
@@ -45,7 +45,7 @@ export default function ManageProducts() {
     formData.append("description", form.description);
     if (form.image) formData.append("image", form.image);
 
-    const res = await fetch("/api/products", {
+    const res = await fetch("http://localhost:5000/api/products", {
       method: "POST",
       body: formData,
     });
@@ -57,7 +57,7 @@ export default function ManageProducts() {
 
   // Delete product
   const handleDelete = async (id: number) => {
-    await fetch(`/api/products/${id}`, { method: "DELETE" });
+    await fetch(`http://localhost:5000/api/products/${id}`, { method: "DELETE" });
     setProducts(prev => prev.filter(p => p.id !== id));
   };
 
