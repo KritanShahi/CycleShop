@@ -23,6 +23,7 @@ export default function Navbar() {
             <Link href="/" className="text-gray-700 dark:text-gray-200 hover:text-green-600">Home</Link>
             <Link href="#about" className="text-gray-700 dark:text-gray-200 hover:text-green-600">About Us</Link>
             <Link href="#explore" className="text-gray-700 dark:text-gray-200 hover:text-green-600">Shop</Link>
+            <Link href="/Bicycle" className="text-gray-700 dark:text-gray-200 hover:text-green-600">Bicycle</Link>
             <Link href="#categories" className="text-gray-700 dark:text-gray-200 hover:text-green-600">Categories</Link>
             <Link href="#accessories" className="text-gray-700 dark:text-gray-200 hover:text-green-600">Accessories</Link>
             <Link href="#account" className="text-gray-700 dark:text-gray-200 hover:text-green-600">Account</Link>

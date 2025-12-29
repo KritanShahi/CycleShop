@@ -44,9 +44,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black font-sans">
 
-      {/* Navbar */}
-      <Navbar />
-
+  
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center text-center py-32 px-4 bg-gradient-to-r from-green-400 to-blue-500 text-white">
         <h1 className="text-5xl font-bold mb-4">Welcome to Kritan Cycle Shop</h1>
@@ -76,7 +74,7 @@ export default function Home() {
     With over 30 years of experience, we have built a reputation for reliability and trust. Generations of cyclists have relied on us for quality products, expert advice, and unmatched service.
   </p>
 
-  {/* Quality and Innovation */}
+  {/* Quality and Innovszzation */}
   <h3 className="text-2xl font-semibold mt-6 mb-3">Quality and Innovation</h3>
   <p className="mb-4 text-gray-700 dark:text-gray-300">
     Our cycles are designed with precision engineering and lightweight frames, ensuring smooth rides, better performance, and durability. We carefully select components to meet the highest standards.

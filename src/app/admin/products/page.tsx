@@ -1,147 +1,163 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import Sidebar from "../components/Sidebar";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
-interface Product {
+type Product = {
   id: number;
   name: string;
-  type: string;
   price: number;
-  description: string;
-  imageUrl: string;
-}
+  category: string; // maps to backend "type"
+  image: string;    // maps to backend "imageUrl"
+  description: string; // added description
+};
 
-export default function ManageProducts() {
+export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [form, setForm] = useState({
-    name: "",
-    type: "",
-    price: "",
-    description: "",
-    image: null as File | null,
-  });
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const router = useRouter();
 
-  // Fetch products from backend
   useEffect(() => {
-    fetch("http://localhost:5000/api/products")
-      .then(res => res.json())
-      .then(data =>{  console.log("Fetched products:", data); setProducts(data)});
+    fetchProducts();
   }, []);
 
-  // Handle form change
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, files } = e.target as HTMLInputElement;
-    if (files) setForm(prev => ({ ...prev, [name]: files[0] }));
-    else setForm(prev => ({ ...prev, [name]: value }));
+  useEffect(() => {
+    if (search === "") {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(
+        (p) =>
+          p.name.toLowerCase().includes(search.toLowerCase()) ||
+          p.category.toLowerCase().includes(search.toLowerCase()) ||
+          p.description.toLowerCase().includes(search.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  }, [search, products]);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/products");
+
+      const mappedProducts = res.data.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        category: p.type,
+        image: p.imageUrl ? `http://localhost:5000${p.imageUrl}` : "/placeholder.png",
+        description: p.description || "",
+      }));
+
+      setProducts(mappedProducts);
+      setFilteredProducts(mappedProducts);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Add product
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("type", form.type);
-    formData.append("price", form.price);
-    formData.append("description", form.description);
-    if (form.image) formData.append("image", form.image);
-
-    const res = await fetch("http://localhost:5000/api/products", {
-      method: "POST",
-      body: formData,
-    });
-
-    const newProduct = await res.json();
-    setProducts(prev => [...prev, newProduct]);
-    setForm({ name: "", type: "", price: "", description: "", image: null });
-  };
-
-  // Delete product
   const handleDelete = async (id: number) => {
-    await fetch(`http://localhost:5000/api/products/${id}`, { method: "DELETE" });
-    setProducts(prev => prev.filter(p => p.id !== id));
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/products/${id}`);
+      const updated = products.filter((p) => p.id !== id);
+      setProducts(updated);
+      setFilteredProducts(updated);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete product");
+    }
+  };
+
+  const handleEdit = (id: number) => {
+    router.push(`/admin/editproduct/${id}`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">Manage Products</h1>
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+      <Sidebar />
 
-      {/* Add Product Form */}
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-6 rounded shadow mb-8">
-        <h2 className="text-xl font-semibold mb-4">Add New Product</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="Cycle Name"
-            value={form.name}
-            onChange={handleChange}
-            className="p-2 border rounded"
-            required
-          />
-          <select
-            name="type"
-            value={form.type}
-            onChange={handleChange}
-            className="p-2 border rounded"
-            required
+      <div className="flex-1">
+        <header className="bg-green-600 text-white p-4 md:ml-0 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Manage Products</h1>
+          <button
+            className="bg-white text-green-600 px-4 py-2 rounded hover:bg-green-50 transition"
+            onClick={() => router.push("/admin/addproduct")}
           >
-            <option value="">Select Type</option>
-            <option value="Mountain">Mountain</option>
-            <option value="Road">Road</option>
-            <option value="Hybrid">Hybrid</option>
-            <option value="Kids">Kids</option>
-          </select>
-          <input
-            type="number"
-            name="price"
-            placeholder="Price"
-            value={form.price}
-            onChange={handleChange}
-            className="p-2 border rounded"
-            required
-          />
-          <input
-            type="file"
-            name="image"
-            onChange={handleChange}
-            className="p-2 border rounded"
-          />
-          <textarea
-            name="description"
-            placeholder="Description"
-            value={form.description}
-            onChange={handleChange}
-            className="p-2 border rounded col-span-1 md:col-span-2"
-            required
-          />
-        </div>
-        <button type="submit" className="mt-4 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
-          Add Product
-        </button>
-      </form>
+            + Add Product
+          </button>
+        </header>
 
-      {/* Products List */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Existing Products</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {products.map(product => (
-            <div key={product.id} className="bg-white dark:bg-gray-800 p-4 rounded shadow flex flex-col">
-              {product.imageUrl && (
-                <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded mb-2" />
-              )}
-              <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">{product.name}</h3>
-              <p className="text-gray-700 dark:text-gray-300">{product.type}</p>
-              <p className="text-gray-700 dark:text-gray-300">Rs. {product.price}</p>
-              <p className="text-gray-700 dark:text-gray-300 mb-2">{product.description}</p>
-              <button
-                onClick={() => handleDelete(product.id)}
-                className="mt-auto bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 transition"
-              >
-                Delete
-              </button>
+        <main className="p-6 max-w-7xl mx-auto">
+          {/* Search bar */}
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Search by name, category, or description"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full p-2 border rounded shadow-sm focus:outline-none focus:ring focus:border-green-300"
+            />
+          </div>
+
+          {loading ? (
+            <p className="text-gray-700 dark:text-gray-300">Loading...</p>
+          ) : filteredProducts.length === 0 ? (
+            <p className="text-gray-700 dark:text-gray-300">No products found.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white dark:bg-gray-800 rounded shadow hover:shadow-lg transition flex flex-col"
+                >
+                  <img
+                    src={product.image || "/placeholder.png"}
+                    alt={product.name}
+                    className="h-48 w-full object-cover rounded-t"
+                  />
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        {product.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Category: {product.category}
+                      </p>
+                      {/* ✅ preserve line breaks in description */}
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 whitespace-pre-wrap">
+                        {product.description}
+                      </p>
+                      <p className="mt-2 font-bold text-gray-900 dark:text-gray-100">
+                        ${product.price.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="flex mt-4 space-x-2">
+                      <button
+                        className="flex-1 bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
+                        onClick={() => handleEdit(product.id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="flex-1 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </main>
       </div>
     </div>
   );
