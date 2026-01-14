@@ -24,7 +24,7 @@ interface Comment {
 
 export default function ProductPage() {
   const params = useParams();
-  const productId = params.id as string;
+  const productId = params?.id ?? "";
 
   const { addToCart } = useCart(); // ✅ GLOBAL CART
 
