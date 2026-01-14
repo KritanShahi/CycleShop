@@ -8,7 +8,7 @@ import Sidebar from "../../components/Sidebar";
 export default function EditProductPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const productId = searchParams.get("id");
+  const productId = searchParams?.get("id")??"";
 
   const [form, setForm] = useState({
     name: "",
