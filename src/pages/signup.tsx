@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
+import Link from "next/link";
 
 export default function Signup() {
   const [name, setName] = useState("");
@@ -20,10 +21,12 @@ export default function Signup() {
     setLoading(true);
 
     try {
+      // Always CLIENT
       await axios.post("http://localhost:5000/api/auth/signup", {
         name,
         email,
         password,
+        role: "CLIENT",
       });
 
       alert("Signup successful! Please login.");
@@ -36,79 +39,66 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-black px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8"
+        className="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-md w-full max-w-md"
       >
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">
           Create Account
         </h2>
-        <p className="text-center text-gray-500 mb-6">
-          Sign up to get started
-        </p>
 
         {/* Name */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Full Name
-          </label>
-          <input
-            type="text"
-            placeholder="John Doe"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full mb-4 p-3 border border-gray-300 dark:border-gray-700 rounded
+                     bg-white dark:bg-gray-800 text-gray-800 dark:text-white
+                     placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
 
         {/* Email */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Email Address
-          </label>
-          <input
-            type="email"
-            placeholder="john@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full mb-4 p-3 border border-gray-300 dark:border-gray-700 rounded
+                     bg-white dark:bg-gray-800 text-gray-800 dark:text-white
+                     placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
 
         {/* Password */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-600 mb-1">
-            Password
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full mb-6 p-3 border border-gray-300 dark:border-gray-700 rounded
+                     bg-white dark:bg-gray-800 text-gray-800 dark:text-white
+                     placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
 
-        {/* Button */}
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-2.5 rounded-lg font-semibold text-white transition ${
-            loading
-              ? "bg-blue-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-          }`}
+          className="w-full bg-green-600 text-white p-3 rounded hover:bg-green-700 transition"
         >
           {loading ? "Creating account..." : "Sign Up"}
         </button>
 
-        {/* Footer */}
-        <p className="text-sm text-center text-gray-500 mt-6">
+        {/* Login Link */}
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
           Already have an account?{" "}
-          <span className="text-blue-600 hover:underline cursor-pointer">
+          <Link
+            href="/login"
+            className="text-green-600 hover:underline font-medium"
+          >
             Login
-          </span>
+          </Link>
         </p>
       </form>
     </div>

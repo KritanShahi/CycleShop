@@ -1,8 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
+import { useCart } from "@/context/CartContext";
 
 interface Product {
   id: number;
@@ -22,23 +24,27 @@ interface Comment {
 
 export default function ProductPage() {
   const params = useParams();
-  const productId = params.id;
+  const productId = params.id as string;
+
+  const { addToCart } = useCart(); // ✅ GLOBAL CART
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState("");
-  const [cart, setCart] = useState<{ product: Product; quantity: number }[]>([]);
   const [quantity, setQuantity] = useState(1);
+  const [showToast, setShowToast] = useState(false); // ✅ Toast visibility
 
   // Fetch product
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/products/${productId}`);
+        const res = await axios.get(
+          `http://localhost:5000/api/products/${productId}`
+        );
         setProduct(res.data);
       } catch (err: any) {
-        console.error("Error fetching product:", err.response?.data || err.message);
+        console.error("Error fetching product:", err.message);
       } finally {
         setLoading(false);
       }
@@ -50,7 +56,9 @@ export default function ProductPage() {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/products/${productId}/comments`);
+        const res = await axios.get(
+          `http://localhost:5000/api/products/${productId}/comments`
+        );
         setComments(res.data);
       } catch (err) {
         console.error("Failed to fetch comments", err);
@@ -62,9 +70,10 @@ export default function ProductPage() {
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
     try {
-      const res = await axios.post(`http://localhost:5000/api/products/${productId}/comments`, {
-        text: commentText,
-      });
+      const res = await axios.post(
+        `http://localhost:5000/api/products/${productId}/comments`,
+        { text: commentText }
+      );
       setComments((prev) => [...prev, res.data]);
       setCommentText("");
     } catch (err) {
@@ -72,52 +81,66 @@ export default function ProductPage() {
     }
   };
 
+  // ✅ Add to cart + show toast
   const handleAddToCart = () => {
     if (!product) return;
-    setCart((prev) => [...prev, { product, quantity }]);
-    alert(`${product.name} (x${quantity}) added to cart!`);
+
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl,
+      quantity,
+    });
+
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000); // hide toast after 3s
   };
 
   if (loading) return <div>Loading product...</div>;
   if (!product) return <div>Product not found</div>;
 
   return (
-    <div className="min-h-screen p-6 max-w-6xl mx-auto">
-      {/* Top section: Image + product info */}
+    <div className="min-h-screen p-6 max-w-6xl mx-auto relative">
+      {/* Toast popup */}
+      {showToast && (
+        <div className="fixed top-5 right-5 bg-green-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-slideIn">
+          {product.name} (x{quantity}) added to cart!
+        </div>
+      )}
+
+      {/* Image + Info */}
       <div className="flex flex-col md:flex-row gap-6 mb-8">
-        {/* Image */}
         <img
-          src={product.imageUrl ? `http://localhost:5000${product.imageUrl}` : "/placeholder.png"}
+          src={
+            product.imageUrl
+              ? `http://localhost:5000${product.imageUrl}`
+              : "/placeholder.png"
+          }
           alt={product.name}
           className="w-full md:w-1/2 h-96 object-cover rounded shadow"
         />
 
-        {/* Product info */}
-        <div className="flex-1 flex flex-col justify-start space-y-4">
-          {/* Name, Type, Price, Shipping (vertical) */}
-          <div className="flex flex-col space-y-2">
-            <h1 className="text-3xl font-bold">{product.name}</h1>
-            <p className="text-lg"><span className="font-semibold">Type:</span> {product.type}</p>
-            <p className="text-lg font-semibold"><span className="font-semibold">Price:</span> ${product.price}</p>
-            <p className="text-lg text-gray-600"><span className="font-semibold">Shipping:</span> Free Shipping</p>
-          </div>
+        <div className="flex-1 space-y-4">
+          <h1 className="text-3xl font-bold">{product.name}</h1>
+          <p><strong>Type:</strong> {product.type}</p>
+          <p className="text-xl font-semibold text-green-600">
+            ${product.price}
+          </p>
+          <p className="text-gray-600">Free Shipping</p>
 
-          {/* Quantity + Add to Cart side by side */}
-          <div className="flex items-center space-x-4 mt-4">
-            <div className="flex items-center space-x-2">
-              <label htmlFor="quantity" className="font-semibold">Quantity:</label>
-              <input
-                type="number"
-                id="quantity"
-                min={1}
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="w-20 p-2 border rounded focus:outline-none focus:ring focus:border-green-300"
-              />
-            </div>
+          <div className="flex items-center gap-4 mt-4">
+            <input
+              type="number"
+              min={1}
+              value={quantity}
+              onChange={(e) => setQuantity(Number(e.target.value))}
+              className="w-20 p-2 border rounded"
+            />
+
             <button
               onClick={handleAddToCart}
-              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition"
+              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
             >
               Add to Cart
             </button>
@@ -128,43 +151,52 @@ export default function ProductPage() {
       {/* Description */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-2">Description</h2>
-        <p className="text-gray-700 whitespace-pre-wrap">{product.description}</p>
+        <p className="whitespace-pre-wrap text-gray-700">
+          {product.description}
+        </p>
       </div>
 
-      {/* Comments Section */}
+      {/* Comments */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Comments</h2>
-        <div className="mb-4">
-          <textarea
-            placeholder="Add a comment..."
-            className="w-full p-3 border rounded mb-2 focus:outline-none focus:ring focus:border-green-300"
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            rows={3}
-          />
-          <button
-            onClick={handleAddComment}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-          >
-            Submit Comment
-          </button>
-        </div>
 
-        {comments.length === 0 ? (
-          <p className="text-gray-500">No comments yet.</p>
-        ) : (
-          <ul className="space-y-2">
-            {comments.map((c) => (
-              <li key={c.id} className="p-3 border rounded bg-gray-50 dark:bg-gray-800">
-                <p className="whitespace-pre-wrap">{c.text}</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {new Date(c.createdAt).toLocaleString()}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <textarea
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          rows={3}
+          className="w-full p-3 border rounded mb-2"
+          placeholder="Add a comment..."
+        />
+
+        <button
+          onClick={handleAddComment}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Submit Comment
+        </button>
+
+        <ul className="mt-4 space-y-2">
+          {comments.map((c) => (
+            <li key={c.id} className="p-3 border rounded bg-gray-50">
+              <p className="whitespace-pre-wrap">{c.text}</p>
+              <p className="text-xs text-gray-400">
+                {new Date(c.createdAt).toLocaleString()}
+              </p>
+            </li>
+          ))}
+        </ul>
       </div>
+
+      {/* Simple animation */}
+      <style jsx>{`
+        .animate-slideIn {
+          animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+          0% { transform: translateX(100%); opacity: 0; }
+          100% { transform: translateX(0); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
