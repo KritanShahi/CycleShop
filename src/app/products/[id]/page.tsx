@@ -25,14 +25,6 @@ interface Comment {
 
 export default function ProductPage() {
   const params = useParams();
-
-
-  if (!params || !params.id) {
-    return <div>Loading...</div>;
-  }
-
-
-
   
   const productId = params?.id ?? "";
 
