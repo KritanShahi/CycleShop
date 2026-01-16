@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Product } from "@/types";
+import { Product } from "../../types";
 import Image from "next/image";
 
 interface Props {
