@@ -1,171 +1,309 @@
-import Navbar from "@/components/Navbar";
-import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+"use client";
+
+import Link from "next/link";
 import Image from "next/image";
-import mountainbike from "../images/mountainbike.jpg"
-import roadBike from '../images/roadbike.jpg';
-import hybridBike from '../images/hybridbike.webp';
-import kidsBike from '../images/kidsbike.jpg';
-
-
-// Map each bike type to its hero image and description
-const bikeSections = [
-  {
-    type: "Mountain",
-    title: "Mountain Bikes",
-    description:
-      "Explore our collection of high-quality mountain bikes designed for adventure and durability. Perfect for trails, hills, and rugged terrains.",
-    image: mountainbike,
-  },
-  {
-    type: "Road",
-    title: "Road Bikes",
-    description:
-      "Lightweight and fast road bikes for smooth city rides or long-distance racing. Ideal for performance and speed.",
-    image: roadBike,
-  },
-  {
-    type: "Hybrid",
-    title: "Hybrid Bikes",
-    description:
-      "A perfect mix of comfort and performance. Hybrid bikes are ideal for casual city rides and light trails.",
-    image: hybridBike,
-  },
-  {
-    type: "Kids",
-    title: "Kids Bikes",
-    description:
-      "Safe and fun bikes for children of all ages. Designed for comfort and stability while learning to ride.",
-    image: kidsBike,
-  },
-];
+import { useGetProductsQuery } from "@/store/productsApi";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { toggleWishlist } from "@/store/wishlistSlice";
+import { useCart } from "@/context/CartContext";
+import { Star, ShieldCheck, Truck, RotateCcw, Heart, Eye } from "lucide-react";
+import mountainbike from "../images/mountainbike.jpg";
+import roadBike from "../images/roadbike.jpg";
+import hybridBike from "../images/hybridbike.webp";
+import kidsBike from "../images/kidsbike.jpg";
+import { getProductImage } from "@/utils/imageResolver";
 
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black font-sans">
+  const { data, isLoading } = useGetProductsQuery({ limit: 4 });
+  const { cart, addToCart } = useCart();
+  const dispatch = useAppDispatch();
+  const wishlistItems = useAppSelector((state) => state.wishlist.items);
 
-  
-      {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center text-center py-32 px-4 bg-gradient-to-r from-green-400 to-blue-500 text-white">
-        <h1 className="text-5xl font-bold mb-4">Welcome to Kritan Cycle Shop</h1>
-        <p className="text-lg mb-8 max-w-xl">
-          Located in Kathmandu, Ason. Trusted cycles for all ages and genuine parts at affordable prices.
-        </p>
-        <a
-          href="#explore"
-          className="bg-white text-black font-semibold px-6 py-3 rounded-full hover:bg-gray-100 transition"
-        >
-          Explore the Cycle Shop
-        </a>
+  const categories = [
+    { name: "Mountain", slug: "mountain", img: mountainbike, desc: "Built for rugged trails and heights" },
+    { name: "Road", slug: "road", img: roadBike, desc: "Engineered for pure speed and distance" },
+    { name: "Hybrid", slug: "hybrid", img: hybridBike, desc: "The perfect fusion of street and trail" },
+    { name: "Kids", slug: "kids", img: kidsBike, desc: "Safe, stable, and fun learn-to-ride builds" },
+  ];
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
+      
+      {/* Premium Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-green-600 via-green-500 to-emerald-700 py-24 sm:py-32 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.1),transparent)]" />
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+          
+          <div className="flex-1 space-y-6 text-center md:text-left">
+            <span className="inline-block bg-white/20 backdrop-blur-md text-xs font-semibold px-3.5 py-1.5 rounded-full border border-white/10 uppercase tracking-widest text-emerald-100">
+              Est. 2050 B.S. | Kathmandu, Ason
+            </span>
+            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-none drop-shadow-sm">
+              Discover Your <br />
+              <span className="text-emerald-300">Perfect Ride</span>
+            </h1>
+            <p className="text-base sm:text-lg text-emerald-50/90 max-w-xl">
+              From high-performance mountain crawlers to daily city hybrids, we provide genuine cycles and accessories at Nepal’s most competitive prices.
+            </p>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+              <Link
+                href="/products"
+                className="bg-white text-emerald-800 font-bold px-8 py-3.5 rounded-full shadow-lg hover:bg-emerald-50 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                Shop Collection
+              </Link>
+              <a
+                href="#legacy"
+                className="bg-transparent border border-white/40 hover:border-white font-semibold px-8 py-3.5 rounded-full transition-all duration-300"
+              >
+                Our Legacy
+              </a>
+            </div>
+          </div>
+
+          <div className="flex-1 max-w-md w-full relative h-[300px] sm:h-[380px] bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 overflow-hidden shadow-2xl flex items-center justify-center group">
+            <Image
+              src={hybridBike}
+              alt="Featured Hybrid Cycle"
+              className="object-contain w-full h-full transform hover:scale-105 transition-transform duration-500"
+              priority
+            />
+            <div className="absolute bottom-4 left-4 right-4 bg-black/40 backdrop-blur-md p-3 rounded-lg border border-white/10 text-xs">
+              <p className="font-semibold text-emerald-300">Oxford City Ride 2026</p>
+              <p className="text-gray-300 text-[10px]">Alloy Frame | 21 Shimano Gears | Lightweight</p>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* About Section */}
-  
-<section className="max-w-5xl mx-auto py-16 px-4">
-  {/* Store Introduction */}
-  <h2 className="text-3xl font-bold mb-6">Welcome to Kritan Cycle Shop</h2>
-  <p className="mb-4 text-gray-700 dark:text-gray-300">
-    Nestled in the heart of Kathmandu, Ason, Kritan Cycle Shop has been providing top-quality bicycles and parts since 2050 B.S. Our mission is to make cycling accessible, safe, and enjoyable for riders of all ages.
-  </p>
+      {/* Feature Badges */}
+      <section className="py-8 bg-zinc-50 dark:bg-zinc-900 border-y border-zinc-200 dark:border-zinc-800">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <Truck className="w-10 h-10 text-green-600 flex-shrink-0" />
+            <div>
+              <h4 className="font-bold text-sm">Free Valley Shipping</h4>
+              <p className="text-xs text-zinc-500">Free courier inside Kathmandu Valley</p>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <ShieldCheck className="w-10 h-10 text-green-600 flex-shrink-0" />
+            <div>
+              <h4 className="font-bold text-sm">Genuine Spare Parts</h4>
+              <p className="text-xs text-zinc-500">100% authentic Shimano parts & frames</p>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <RotateCcw className="w-10 h-10 text-green-600 flex-shrink-0" />
+            <div>
+              <h4 className="font-bold text-sm">One-Year Warranty</h4>
+              <p className="text-xs text-zinc-500">Complete peace of mind frame coverage</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-  {/* Our Legacy */}
-  <h3 className="text-2xl font-semibold mt-6 mb-3">Our Legacy</h3>
-  <p className="mb-4 text-gray-700 dark:text-gray-300">
-    With over 30 years of experience, we have built a reputation for reliability and trust. Generations of cyclists have relied on us for quality products, expert advice, and unmatched service.
-  </p>
+      {/* Category Carousel Section */}
+      <section className="py-16 max-w-7xl mx-auto px-6">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl font-extrabold tracking-tight">Explore Categories</h2>
+          <p className="text-sm text-zinc-500 mt-2">Find the specific type of bicycle matched for your riding style.</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {categories.map((c) => (
+            <Link
+              key={c.slug}
+              href={`/products?q=${c.name}`}
+              className="group relative h-72 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-end p-6 border border-zinc-200 dark:border-zinc-800"
+            >
+              <Image
+                src={c.img}
+                alt={c.name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              <div className="relative z-10 space-y-1 text-white">
+                <h3 className="font-bold text-lg group-hover:text-green-400 transition-colors">{c.name}</h3>
+                <p className="text-[11px] text-gray-300 leading-snug">{c.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-  {/* Quality and Innovszzation */}
-  <h3 className="text-2xl font-semibold mt-6 mb-3">Quality and Innovation</h3>
-  <p className="mb-4 text-gray-700 dark:text-gray-300">
-    Our cycles are designed with precision engineering and lightweight frames, ensuring smooth rides, better performance, and durability. We carefully select components to meet the highest standards.
-  </p>
+      {/* Dynamic Featured Products (with RTK query support and skeleton fallback) */}
+      <section className="py-16 bg-zinc-50 dark:bg-zinc-900">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10">
+            <div>
+              <h2 className="text-3xl font-extrabold tracking-tight">Featured Collections</h2>
+              <p className="text-sm text-zinc-500 mt-1">Our customer-favorite models and recently stocked cycles.</p>
+            </div>
+            <Link
+              href="/products"
+              className="text-sm font-bold text-green-600 hover:text-green-700 hover:underline flex items-center gap-1.5"
+            >
+              View All Products &rarr;
+            </Link>
+          </div>
 
-  {/* Genuine Parts & Accessories */}
-  <h3 className="text-2xl font-semibold mt-6 mb-3">Genuine Parts & Accessories</h3>
-  <p className="mb-4 text-gray-700 dark:text-gray-300">
-    Maintain your bike with confidence using our range of authentic parts and accessories. All products are selected for their reliability, longevity, and affordability.
-  </p>
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white dark:bg-zinc-800 rounded-xl overflow-hidden shadow animate-pulse h-96 flex flex-col p-4 space-y-4">
+                  <div className="bg-zinc-200 dark:bg-zinc-700 h-48 w-full rounded-lg" />
+                  <div className="bg-zinc-200 dark:bg-zinc-700 h-6 w-3/4 rounded" />
+                  <div className="bg-zinc-200 dark:bg-zinc-700 h-4 w-1/2 rounded" />
+                  <div className="bg-zinc-200 dark:bg-zinc-700 h-10 w-full rounded mt-auto" />
+                </div>
+              ))}
+            </div>
+          ) : !data?.products || data.products.length === 0 ? (
+            <div className="text-center py-12 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800">
+              <p className="text-zinc-500 text-sm">No products currently listed. Visit Admin panel to add cycles!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {data.products.map((p) => {
+                const isWishlisted = wishlistItems.includes(p.id);
+                return (
+                  <div
+                    key={p.id}
+                    className="group bg-white dark:bg-zinc-800 rounded-xl overflow-hidden shadow hover:shadow-lg border border-zinc-200 dark:border-zinc-800 transition-all duration-300 flex flex-col"
+                  >
+                    <div className="relative h-48 bg-zinc-100 dark:bg-zinc-900 group-overflow-hidden flex items-center justify-center p-2">
+                      <img
+                        src={getProductImage(p.imageUrl, p.type)}
+                        alt={p.name}
+                        className="object-cover h-full w-full rounded-t transform group-hover:scale-102 transition-transform duration-300"
+                      />
+                      {/* Wishlist toggle */}
+                      <button
+                        onClick={() => dispatch(toggleWishlist(p.id))}
+                        className="absolute top-3 right-3 p-2 bg-white/80 dark:bg-black/50 backdrop-blur-md rounded-full shadow hover:bg-white dark:hover:bg-black hover:scale-105 transition"
+                      >
+                        <Heart
+                          className={`w-4 h-4 ${
+                            isWishlisted ? "fill-red-500 text-red-500" : "text-zinc-600 dark:text-zinc-300"
+                          }`}
+                        />
+                      </button>
+                    </div>
 
-  {/* Our Collection */}
-  <h3 className="text-2xl font-semibold mt-6 mb-3">Our Collection</h3>
-  <p className="mb-4 text-gray-700 dark:text-gray-300">
-    From beginner bikes to professional models, we offer a wide variety for all ages. Explore brands like Everest, City, Oxford, Talon, and more. Whether for city rides, trails, or family adventures, we have the perfect cycle for you.
-  </p>
+                    <div className="p-4 flex-1 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className="text-[10px] bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 px-2 py-0.5 rounded font-medium">
+                            {p.type}
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-sm tracking-tight line-clamp-1 group-hover:text-green-600 transition-colors">
+                          {p.name}
+                        </h3>
+                        <p className="text-xs text-zinc-500 mt-1 line-clamp-2 min-h-[32px]">
+                          {p.description}
+                        </p>
+                      </div>
 
-  {/* Customer Commitment */}
-  <h3 className="text-2xl font-semibold mt-6 mb-3">Customer Commitment</h3>
-  <p className="mb-4 text-gray-700 dark:text-gray-300">
-    Your satisfaction is our priority. Our friendly and knowledgeable staff are always ready to assist you in choosing the right bike, providing maintenance tips, and ensuring a seamless cycling experience.
-  </p>
-</section>
+                      <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                        <span className="font-bold text-base text-zinc-900 dark:text-white">
+                          Rs. {p.price.toLocaleString()}
+                        </span>
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/products/${p.id}`}
+                            className="p-2 bg-zinc-100 text-zinc-600 hover:bg-green-600 hover:text-white dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-green-600 dark:hover:text-white rounded-lg transition"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                          <button
+                            onClick={() => {
+                              addToCart({
+                                id: p.id,
+                                name: p.name,
+                                price: p.price,
+                                imageUrl: p.imageUrl,
+                                quantity: 1,
+                              });
+                            }}
+                            className="bg-green-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg hover:bg-green-750 transition"
+                          >
+                            Add +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
 
-      {/* Featured Products / Explore Section */}
-   <section id="explore" className="w-full py-16">
-        <h2 className="text-3xl font-bold mb-8 text-center">Explore the Cycle Shop</h2>
+      {/* Promos / Coupons Banner */}
+      <section className="py-16 max-w-7xl mx-auto px-6">
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-900 dark:to-black rounded-3xl p-8 sm:p-12 relative overflow-hidden border border-zinc-700 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_right,rgba(22,163,74,0.15),transparent)] pointer-events-none" />
+          <div className="space-y-4 max-w-xl text-center md:text-left text-white">
+            <span className="inline-block bg-green-500/20 text-green-400 border border-green-500/30 text-[10px] font-semibold tracking-widest px-3 py-1 rounded-full uppercase">
+              Special Monsoon Offer
+            </span>
+            <h3 className="text-3xl font-extrabold tracking-tight">Get 10% Discount Today!</h3>
+            <p className="text-sm text-gray-300">
+              Apply the special checkout discount coupon code below and claim an instant 10% discount on any bike in our catalog.
+            </p>
+            <div className="inline-flex items-center gap-2 bg-zinc-800 border border-zinc-700 px-4 py-2 rounded-xl text-sm font-mono text-green-400 font-bold select-all">
+              BIKER10
+            </div>
+          </div>
+          <div className="flex-shrink-0 text-center md:text-right">
+            <Link
+              href="/products"
+              className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3.5 rounded-full shadow-lg transition-transform transform hover:-translate-y-0.5"
+            >
+              Redeem Discount Now
+            </Link>
+          </div>
+        </div>
+      </section>
 
-        {bikeSections.map(section => (
-          <div key={section.type} className="mb-16">
-            {/* Hero Image + Overlay */}
-            <div className="relative w-full h-[500px] lg:h-[600px] mb-8">
-              <Image src={section.image} alt={section.title} fill className="object-cover" />
-              <div className="absolute inset-0 bg-gray-900/30"></div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-                <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">{section.title}</h2>
-                <p className="text-lg lg:text-xl text-white max-w-3xl">{section.description}</p>
+      {/* Legacy and History Section */}
+      <section id="legacy" className="py-16 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <h2 className="text-3xl font-extrabold tracking-tight">Over 30 Years of Cycling Legacy</h2>
+            <div className="w-16 h-1 bg-green-600 rounded" />
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Nestled in the historic and bustling hub of Kathmandu at Ason, Kritan Cycle Shop has been providing genuine, reliable cycles and spare parts since 2050 B.S. What began as a local workshop has grown to represent decades of trust for generations of riders.
+            </p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Our cycles are built with durability, lightweight frames, and genuine components. Whether you are searching for high-performance offroad gears or teaching your children how to balance, our experienced technicians hand-assemble every bicycle to guarantee safety and a smooth ride.
+            </p>
+            <div className="grid grid-cols-2 gap-6 pt-4">
+              <div className="p-4 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800">
+                <span className="block text-3xl font-extrabold text-green-600 dark:text-green-400">30K+</span>
+                <span className="text-xs text-zinc-500">Cycles Sold</span>
+              </div>
+              <div className="p-4 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800">
+                <span className="block text-3xl font-extrabold text-green-600 dark:text-green-400">100%</span>
+                <span className="text-xs text-zinc-500">Customer Support</span>
               </div>
             </div>
-
-       
-          
           </div>
-        ))}
+
+          <div className="relative h-[350px] lg:h-[450px] rounded-3xl overflow-hidden shadow-2xl border border-zinc-300 dark:border-zinc-700">
+            <Image
+              src={roadBike}
+              alt="Store Front Bicycle Shop"
+              fill
+              className="object-cover"
+            />
+          </div>
+        </div>
       </section>
-    
-      {/* Footer */}
-   {/* Footer */}
-<footer className="bg-zinc-200 dark:bg-zinc-900 py-12 mt-16">
-  <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-    
-    {/* About */}
-    <div>
-      <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Kritan Cycle Shop</h3>
-      <p className="text-gray-700 dark:text-gray-300">
-        Located in Kathmandu, Ason. Offering trusted cycles for all ages and genuine parts at affordable prices.
-      </p>
-    </div>
-
-    {/* Useful Links */}
-    <div>
-      <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Useful Links</h3>
-      <ul className="space-y-2 text-gray-700 dark:text-gray-300">
-        <li><a href="/" className="hover:underline">Home</a></li>
-        <li><a href="#about" className="hover:underline">About Us</a></li>
-        <li><a href="#contact" className="hover:underline">Contact Us</a></li>
-        <li><a href="#explore" className="hover:underline">Our Collection</a></li>
-        <li><a href="#category-bicycle" className="hover:underline">Category: Bicycle</a></li>
-        <li><a href="#accessories" className="hover:underline">Accessories</a></li>
-        <li><a href="#account" className="hover:underline">Account</a></li>
-        <li><a href="#login" className="hover:underline">Customer Login</a></li>
-        <li><a href="#addresses" className="hover:underline">Addresses</a></li>
-        <li><a href="#payment" className="hover:underline">Payment Methods</a></li>
-      </ul>
-    </div>
-
-    {/* Contact / Social */}
-    <div>
-      <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Contact Us</h3>
-      <p className="text-gray-700 dark:text-gray-300">Kritan Cycle Shop</p>
-      <p className="text-gray-700 dark:text-gray-300">Kathmandu, Ason</p>
-      <p className="text-gray-700 dark:text-gray-300">Phone: +977-XXXXXXX</p>
-      <p className="text-gray-700 dark:text-gray-300">Email: info@govindacycleshop.com</p>
-    </div>
-  </div>
-
-  <div className="mt-8 text-center text-gray-600 dark:text-gray-400">
-    &copy; {new Date().getFullYear()} Kritan Cycle Shop. All rights reserved.
-  </div>
-</footer>
-
     </div>
   );
 }

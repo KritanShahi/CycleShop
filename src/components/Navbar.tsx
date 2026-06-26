@@ -1,34 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
+import { useCart } from "@/context/CartContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-
-  // Function to load cart count
-  const loadCartCount = () => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const total = cart.reduce(
-      (sum: number, item: any) => sum + (item.quantity || 1),
-      0
-    );
-    setCartCount(total);
-  };
-
-  useEffect(() => {
-    // Load initially
-    loadCartCount();
-
-    // Listen for cart updates
-    window.addEventListener("cartUpdated", loadCartCount);
-
-    return () => {
-      window.removeEventListener("cartUpdated", loadCartCount);
-    };
-  }, []);
+  const { cart } = useCart();
+  const cartCount = cart.reduce(
+    (sum: number, item: any) => sum + (item.quantity || 1),
+    0
+  );
 
   return (
     <nav className="bg-white dark:bg-black shadow-md fixed w-full z-50">
@@ -45,13 +28,12 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-6 items-center">
-            <Link href="/" className="nav-link">Home</Link>
-            <Link href="#about" className="nav-link">About Us</Link>
-            <Link href="#explore" className="nav-link">Shop</Link>
-            <Link href="/Bicycle" className="nav-link">Bicycle</Link>
-            <Link href="#categories" className="nav-link">Contact Us</Link>
-            <Link href="#accessories" className="nav-link">Accessories</Link>
-            <Link href="/account" className="nav-link">Account</Link>
+            <Link href="/" className="nav-link font-medium text-gray-700 dark:text-gray-200 hover:text-green-600 dark:hover:text-green-400">Home</Link>
+            <Link href="/products" className="nav-link font-medium text-gray-700 dark:text-gray-200 hover:text-green-600 dark:hover:text-green-400">Shop</Link>
+            <Link href="/categories" className="nav-link font-medium text-gray-700 dark:text-gray-200 hover:text-green-600 dark:hover:text-green-400">Categories</Link>
+            <Link href="/Bicycle" className="nav-link font-medium text-gray-700 dark:text-gray-200 hover:text-green-600 dark:hover:text-green-400">Quick List</Link>
+            <Link href="/about" className="nav-link font-medium text-gray-700 dark:text-gray-200 hover:text-green-600 dark:hover:text-green-400">About Us</Link>
+            <Link href="/account" className="nav-link font-medium text-gray-700 dark:text-gray-200 hover:text-green-600 dark:hover:text-green-400">Account</Link>
 
             {/* Cart */}
             <Link href="/cart" className="relative">
@@ -98,14 +80,13 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white dark:bg-black px-4 py-4 space-y-2 shadow-md">
-          <Link href="/" className="mobile-link">Home</Link>
-          <Link href="#about" className="mobile-link">About Us</Link>
-          <Link href="#explore" className="mobile-link">Shop</Link>
-          <Link href="/Bicycle" className="mobile-link">Bicycle</Link>
-          <Link href="#categories" className="mobile-link">Categories</Link>
-          <Link href="#accessories" className="mobile-link">Accessories</Link>
-          <Link href="#account" className="mobile-link">Account</Link>
+        <div className="md:hidden bg-white dark:bg-black px-4 py-4 space-y-2 shadow-md flex flex-col">
+          <Link href="/" className="mobile-link py-2 font-medium text-gray-700 dark:text-gray-200 border-b border-zinc-100 dark:border-zinc-900" onClick={() => setIsOpen(false)}>Home</Link>
+          <Link href="/products" className="mobile-link py-2 font-medium text-gray-700 dark:text-gray-200 border-b border-zinc-100 dark:border-zinc-900" onClick={() => setIsOpen(false)}>Shop</Link>
+          <Link href="/categories" className="mobile-link py-2 font-medium text-gray-700 dark:text-gray-200 border-b border-zinc-100 dark:border-zinc-900" onClick={() => setIsOpen(false)}>Categories</Link>
+          <Link href="/Bicycle" className="mobile-link py-2 font-medium text-gray-700 dark:text-gray-200 border-b border-zinc-100 dark:border-zinc-900" onClick={() => setIsOpen(false)}>Quick List</Link>
+          <Link href="/about" className="mobile-link py-2 font-medium text-gray-700 dark:text-gray-200 border-b border-zinc-100 dark:border-zinc-900" onClick={() => setIsOpen(false)}>About Us</Link>
+          <Link href="/account" className="mobile-link py-2 font-medium text-gray-700 dark:text-gray-200" onClick={() => setIsOpen(false)}>Account</Link>
         </div>
       )}
     </nav>

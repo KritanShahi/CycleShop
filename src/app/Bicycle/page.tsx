@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { getProductImage } from "@/utils/imageResolver";
 
 interface Product {
   id: number;
@@ -28,8 +29,10 @@ export default function ProductList() {
     const fetchProducts = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/products");
-        setProducts(res.data);
-        setFilteredProducts(res.data);
+        const productArray = res.data.products || res.data;
+        const finalArray = Array.isArray(productArray) ? productArray : [];
+        setProducts(finalArray);
+        setFilteredProducts(finalArray);
       } catch (err) {
         console.error("Error fetching products:", err);
       } finally {
@@ -126,7 +129,7 @@ export default function ProductList() {
               <Link key={product.id} href={`/products/${product.id}`}>
                 <div className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:-translate-y-1">
                   <img
-                    src={product.imageUrl ? `http://localhost:5000${product.imageUrl}` : "/placeholder.png"}
+                    src={getProductImage(product.imageUrl, product.type)}
                     alt={product.name}
                     className="w-full h-48 object-cover"
                   />
@@ -136,7 +139,7 @@ export default function ProductList() {
                       <span className="text-sm font-medium text-purple-600">{product.type}</span>
                     </div>
                     <p className="text-gray-600 text-sm mb-3 line-clamp-3">{product.description}</p>
-                    <div className="text-xl font-bold text-pink-600">${product.price.toLocaleString()}</div>
+                    <div className="text-xl font-bold text-pink-600">Rs. {product.price.toLocaleString()}</div>
                   </div>
                 </div>
               </Link>

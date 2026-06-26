@@ -1,7 +1,7 @@
 // src/context/CartContext.tsx
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export interface CartItem {
   id: number;
@@ -22,6 +22,29 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("cart");
+    if (stored) {
+      try {
+        setCart(JSON.parse(stored));
+      } catch (e) {
+        console.error("Failed to parse cart from localStorage:", e);
+      }
+    }
+    setIsInitialized(true);
+  }, []);
+
+  // Save to localStorage when cart updates
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("cart", JSON.stringify(cart));
+      // Dispatch a custom event to notify other legacy components if any
+      window.dispatchEvent(new Event("cartUpdated"));
+    }
+  }, [cart, isInitialized]);
 
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
@@ -47,6 +70,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     </CartContext.Provider>
   );
 };
+
+
 
 export const useCart = () => {
   const context = useContext(CartContext);
